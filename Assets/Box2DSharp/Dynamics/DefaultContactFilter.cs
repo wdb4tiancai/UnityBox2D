@@ -1,11 +1,11 @@
-namespace Box2DSharp.Dynamics
+﻿namespace Box2DSharp.Dynamics
 {
-    /// Implement this class to provide collision filtering. In other words, you can implement
-    /// this class if you want finer control over contact creation.
+    /// 实现此类以提供碰撞过滤。 换句话说，您可以实施
+    /// 如果您想更好地控制联系人创建，则使用此类。
     public sealed class DefaultContactFilter : IContactFilter
     {
-        /// Return true if contact calculations should be performed between these two shapes.
-        /// @warning for performance reasons this is only called when the AABBs begin to overlap.
+        /// 如果应在这两个形状之间执行接触计算，则返回 true。
+        /// @warning 出于性能原因，仅当 AABB 开始重叠时才会调用。
         public bool ShouldCollide(Fixture fixtureA, Fixture fixtureB)
         {
             var filterA = fixtureA.Filter;

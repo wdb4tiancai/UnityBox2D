@@ -11,10 +11,10 @@ using Box2DSharp.Dynamics.Joints;
 
 namespace Box2DSharp.Dynamics
 {
-    /// The body type.
-    /// static: zero mass, zero velocity, may be manually moved
-    /// kinematic: zero mass, non-zero velocity set by user, moved by solver
-    /// dynamic: positive mass, non-zero velocity determined by forces, moved by solver
+    /// 主体类型。
+    /// 静态：零质量，零速度，可以手动移动
+    /// 运动学：零质量，用户设置的非零速度，由解算器移动
+    /// 动态：正质量，由力确定的非零速度，由解算器移动
     public enum BodyType
     {
         StaticBody = 0,
@@ -50,10 +50,10 @@ namespace Box2DSharp.Dynamics
         /// The world angle of the body in radians.
         public float Angle;
 
-        /// Angular damping is use to reduce the angular velocity. The damping parameter
-        /// can be larger than 1.0f but the damping effect becomes sensitive to the
-        /// time step when the damping parameter is large.
-        /// Units are 1/time
+        /// 角阻尼用于降低角速度。 阻尼参数
+        /// 可以大于 1.0f 但阻尼效果变得对
+        /// 阻尼参数较大时的时间步长。
+        /// 单位为1/次
         public float AngularDamping;
 
         /// The angular velocity of the body.
@@ -90,10 +90,10 @@ namespace Box2DSharp.Dynamics
             set => _gravityScale = value;
         }
 
-        /// Linear damping is use to reduce the linear velocity. The damping parameter
-        /// can be larger than 1.0f but the damping effect becomes sensitive to the
-        /// time step when the damping parameter is large.
-        /// Units are 1/time
+        /// 线性阻尼用于降低线速度。 阻尼参数
+        /// 可以大于 1.0f 但阻尼效果变得对
+        /// 阻尼参数较大时的时间步长。
+        /// 单位为1/次
         public float LinearDamping;
 
         /// The linear velocity of the body's origin in world co-ordinates.
@@ -617,14 +617,14 @@ namespace Box2DSharp.Dynamics
         }
 
         /// <summary>
-        /// Creates a fixture and attach it to this body. Use this function if you need
-        /// to set some fixture parameters, like friction. Otherwise you can create the
-        /// fixture directly from a shape.
-        /// If the density is non-zero, this function automatically updates the mass of the body.
-        /// Contacts are not created until the next time step.
-        /// @param def the fixture definition.
-        /// @warning This function is locked during callbacks.
         /// 创建夹具
+        /// 创建一个固定装置并将其附加到该主体上。 如果需要，请使用此功能
+        /// 设置一些夹具参数，例如摩擦力。 否则你可以创建
+        /// 直接从形状固定。
+        /// 如果密度非零，该函数会自动更新物体的质量。
+        /// 直到下一个时间步才会创建联系人。
+        /// @param def 夹具定义。
+        /// @warning 该函数在回调期间被锁定。
         /// </summary>
         /// <param name="def"></param>
         /// <returns></returns>

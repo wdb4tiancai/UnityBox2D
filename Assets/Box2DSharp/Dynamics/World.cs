@@ -95,14 +95,16 @@ namespace Box2DSharp.Dynamics
         private bool _allowSleep;
 
         /// <summary>
-        /// Enable/disable single stepped continuous physics. For testing. 
+        /// 启用或禁用单步连续物理。
+        /// 当单步连续物理启用时，你可以在每个步骤手动调用 Step 方法来推进物理仿真。
+        /// 这对于测试和调试非常有用。
         /// 子步进
         /// </summary>
         public bool SubStepping { get; set; }
 
         /// <summary>
-        /// These are for debugging the solver.
-        /// Enable/disable warm starting. For testing.
+        //启用或禁用热启动。热启动是一种优化技术，它利用上一帧的解决方案来加速下一帧的求解过程。
+        //在调试和测试过程中，你可能希望禁用热启动以便更容易观察到物理仿真的行为。
         /// 热启动,用于调试求解器
         /// </summary>
         public bool WarmStarting { get; set; }
@@ -254,10 +256,9 @@ namespace Box2DSharp.Dynamics
         }
 
         /// <summary>
-        /// Destroy a rigid body given a definition. No reference to the definition
-        /// is retained. This function is locked during callbacks.
-        /// @warning This automatically deletes all associated shapes and joints.
-        /// @warning This function is locked during callbacks.
+        /// 摧毁给定定义的刚体。 不保留对定义的引用。 该函数在回调期间被锁定。
+        /// @warning 这会自动删除所有关联的形状和关节。
+        /// @warning 该函数在回调期间被锁定。
         /// 删除一个物体(刚体)
         /// </summary>
         /// <param name="body"></param>
@@ -443,7 +444,8 @@ namespace Box2DSharp.Dynamics
             // 时间间隔与迭代次数
             var step = new TimeStep
             {
-                Dt = timeStep, VelocityIterations = velocityIterations,
+                Dt = timeStep,
+                VelocityIterations = velocityIterations,
                 PositionIterations = positionIterations
             };
 
@@ -615,7 +617,8 @@ namespace Box2DSharp.Dynamics
         {
             var input = new RayCastInput
             {
-                MaxFraction = 1.0f, P1 = point1,
+                MaxFraction = 1.0f,
+                P1 = point1,
                 P2 = point2
             };
             _rayCastCallback.Set(ContactManager, in callback);
@@ -931,7 +934,7 @@ namespace Box2DSharp.Dynamics
             }
 
             // Find TOI events and solve them.
-            for (;;)
+            for (; ; )
             {
                 // Find the first TOI.
                 Contact minContact = null;
@@ -1284,9 +1287,12 @@ namespace Box2DSharp.Dynamics
                 var dt = (1.0f - minAlpha) * step.Dt;
                 var subStep = new TimeStep
                 {
-                    Dt = dt, InvDt = 1.0f / dt,
-                    DtRatio = 1.0f, PositionIterations = 20,
-                    VelocityIterations = step.VelocityIterations, WarmStarting = false
+                    Dt = dt,
+                    InvDt = 1.0f / dt,
+                    DtRatio = 1.0f,
+                    PositionIterations = 20,
+                    VelocityIterations = step.VelocityIterations,
+                    WarmStarting = false
                 };
 
                 island.SolveTOI(subStep, bodyA.IslandIndex, bodyB.IslandIndex);
@@ -1531,59 +1537,59 @@ namespace Box2DSharp.Dynamics
         {
             switch (fixture.Shape)
             {
-            case CircleShape circle:
-            {
-                var center = MathUtils.Mul(xf, circle.Position);
-                var radius = circle.Radius;
-                var axis = MathUtils.Mul(xf.Rotation, new Vector2(1.0f, 0.0f));
+                case CircleShape circle:
+                    {
+                        var center = MathUtils.Mul(xf, circle.Position);
+                        var radius = circle.Radius;
+                        var axis = MathUtils.Mul(xf.Rotation, new Vector2(1.0f, 0.0f));
 
-                Drawer.DrawSolidCircle(center, radius, axis, color);
-            }
-                break;
+                        Drawer.DrawSolidCircle(center, radius, axis, color);
+                    }
+                    break;
 
-            case EdgeShape edge:
-            {
-                var v1 = MathUtils.Mul(xf, edge.Vertex1);
-                var v2 = MathUtils.Mul(xf, edge.Vertex2);
-                Drawer.DrawSegment(v1, v2, color);
+                case EdgeShape edge:
+                    {
+                        var v1 = MathUtils.Mul(xf, edge.Vertex1);
+                        var v2 = MathUtils.Mul(xf, edge.Vertex2);
+                        Drawer.DrawSegment(v1, v2, color);
 
-                if (edge.OneSided == false)
-                {
-                    Drawer.DrawPoint(v1, 4.0f, color);
-                    Drawer.DrawPoint(v2, 4.0f, color);
-                }
-            }
-                break;
+                        if (edge.OneSided == false)
+                        {
+                            Drawer.DrawPoint(v1, 4.0f, color);
+                            Drawer.DrawPoint(v2, 4.0f, color);
+                        }
+                    }
+                    break;
 
-            case ChainShape chain:
-            {
-                var count = chain.Count;
-                var vertices = chain.Vertices;
+                case ChainShape chain:
+                    {
+                        var count = chain.Count;
+                        var vertices = chain.Vertices;
 
-                var v1 = MathUtils.Mul(xf, vertices[0]);
-                for (var i = 1; i < count; ++i)
-                {
-                    var v2 = MathUtils.Mul(xf, vertices[i]);
-                    Drawer.DrawSegment(v1, v2, color);
-                    v1 = v2;
-                }
-            }
-                break;
+                        var v1 = MathUtils.Mul(xf, vertices[0]);
+                        for (var i = 1; i < count; ++i)
+                        {
+                            var v2 = MathUtils.Mul(xf, vertices[i]);
+                            Drawer.DrawSegment(v1, v2, color);
+                            v1 = v2;
+                        }
+                    }
+                    break;
 
-            case PolygonShape poly:
-            {
-                var vertexCount = poly.Count;
-                Debug.Assert(vertexCount <= Settings.MaxPolygonVertices);
-                Span<Vector2> vertices = stackalloc Vector2[vertexCount];
+                case PolygonShape poly:
+                    {
+                        var vertexCount = poly.Count;
+                        Debug.Assert(vertexCount <= Settings.MaxPolygonVertices);
+                        Span<Vector2> vertices = stackalloc Vector2[vertexCount];
 
-                for (var i = 0; i < vertexCount; ++i)
-                {
-                    vertices[i] = MathUtils.Mul(xf, poly.Vertices[i]);
-                }
+                        for (var i = 0; i < vertexCount; ++i)
+                        {
+                            vertices[i] = MathUtils.Mul(xf, poly.Vertices[i]);
+                        }
 
-                Drawer.DrawSolidPolygon(vertices, vertexCount, color);
-            }
-                break;
+                        Drawer.DrawSolidPolygon(vertices, vertexCount, color);
+                    }
+                    break;
             }
         }
 

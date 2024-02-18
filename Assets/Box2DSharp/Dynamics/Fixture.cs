@@ -278,27 +278,26 @@ namespace Box2DSharp.Dynamics
         }
     }
 
-    /// This holds contact filtering data.
+    /// 这保存了联系人过滤数据。
     public struct Filter
     {
-        /// The collision category bits. Normally you would just set one bit.
+        /// 碰撞类别位。 通常您只需设置一位。
         public ushort CategoryBits
         {
             get => _categoryBits.GetValueOrDefault(0x0001);
             set => _categoryBits = value;
         }
 
-        /// The collision mask bits. This states the categories that this
-        /// shape would accept for collision.
+        /// 碰撞掩码位。 这说明了该形状接受碰撞的类别。
         public ushort MaskBits
         {
             get => _maskBits.GetValueOrDefault(0xFFFF);
             set => _maskBits = value;
         }
 
-        /// Collision groups allow a certain group of objects to never collide (negative)
-        /// or always collide (positive). Zero means no collision group. Non-zero group
-        /// filtering always wins against the mask bits.
+        /// 碰撞组允许某组物体永远不会碰撞（负）
+        /// 或者总是碰撞（正）。 零表示没有冲突组。 非零群
+        /// 过滤总是战胜掩码位。
         public short GroupIndex;
 
         private ushort? _categoryBits;
@@ -306,19 +305,19 @@ namespace Box2DSharp.Dynamics
         private ushort? _maskBits;
     }
 
-    /// A fixture definition is used to create a fixture. This class defines an
-    /// abstract fixture definition. You can reuse fixture definitions safely.
+    /// 夹具定义用于创建夹具。 这个类定义了一个
+    /// 抽象夹具定义。 您可以安全地重用夹具定义。
     public struct FixtureDef
     {
-        /// The density, usually in kg/m^2.
+        /// 密度，通常以 kg/m^2 为单位。
         public float Density;
 
-        /// Contact filtering data.
+        /// 碰撞检测时所应用的过滤条件
         public Filter Filter;
 
         private float? _friction;
 
-        /// The friction coefficient, usually in the range [0,1].
+        /// 摩擦系数，通常在[0,1]范围内。
         public float Friction
         {
             get => _friction.GetValueOrDefault(0.2f);
@@ -342,8 +341,8 @@ namespace Box2DSharp.Dynamics
 
         private float? _restitutionThreshold;
 
-        /// The shape, this must be set. The shape will be cloned, so you
-        /// can create the shape on the stack.
+        /// 形状，这个必须设置。 该形状将被克隆，因此您
+        /// 可以在堆栈上创建形状。
         public Shape Shape;
 
         /// Use this to store application specific fixture data.

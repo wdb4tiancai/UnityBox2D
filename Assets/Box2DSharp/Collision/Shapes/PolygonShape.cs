@@ -6,12 +6,12 @@ using Box2DSharp.Common;
 
 namespace Box2DSharp.Collision.Shapes
 {
-    /// <summary>
-    /// A solid convex polygon. It is assumed that the interior of the polygon is to
-    /// the left of each edge.
-    /// Polygons have a maximum number of vertices equal to b2_maxPolygonVertices.
-    /// In most cases you should not need many vertices for a convex polygon.
-    /// </summary>
+    /// <摘要>
+    /// 实心凸多边形。 假设多边形的内部是
+    /// 每条边的左侧。
+    /// 多边形的最大顶点数等于 b2_maxPolygonVertices。
+    /// 在大多数情况下，凸多边形不需要很多顶点。
+    /// </摘要>
     public class PolygonShape : Shape
     {
         public const int MaxPolygonVertices = Settings.MaxPolygonVertices;
@@ -33,7 +33,7 @@ namespace Box2DSharp.Collision.Shapes
         /// Implement b2Shape.
         public override Shape Clone()
         {
-            var clone = new PolygonShape {Centroid = Centroid, Count = Count};
+            var clone = new PolygonShape { Centroid = Centroid, Count = Count };
             Array.Copy(Vertices, clone.Vertices, Vertices.Length);
             Array.Copy(Normals, clone.Normals, Normals.Length);
             return clone;
@@ -122,7 +122,7 @@ namespace Box2DSharp.Collision.Shapes
             var m = 0;
             var ih = i0;
 
-            for (;;)
+            for (; ; )
             {
                 Debug.Assert(m < MaxPolygonVertices);
                 hull[m] = ih;
@@ -321,7 +321,8 @@ namespace Box2DSharp.Collision.Shapes
             {
                 output = new RayCastOutput
                 {
-                    Fraction = lower, Normal = MathUtils.Mul(transform.Rotation, Normals[index])
+                    Fraction = lower,
+                    Normal = MathUtils.Mul(transform.Rotation, Normals[index])
                 };
                 return true;
             }
@@ -343,7 +344,7 @@ namespace Box2DSharp.Collision.Shapes
             }
 
             var r = new Vector2(Radius, Radius);
-            aabb = new AABB {LowerBound = lower - r, UpperBound = upper + r};
+            aabb = new AABB { LowerBound = lower - r, UpperBound = upper + r };
         }
 
         /// @see b2Shape::ComputeMass
@@ -408,7 +409,7 @@ namespace Box2DSharp.Collision.Shapes
             }
 
             // Total mass
-            massData = new MassData {Mass = density * area};
+            massData = new MassData { Mass = density * area };
 
             // Center of mass
             Debug.Assert(area > Settings.Epsilon);
