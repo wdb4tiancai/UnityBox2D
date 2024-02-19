@@ -44,17 +44,32 @@ namespace Box2DGame
 
         static GameWorldFilter()
         {
+            short groupIndex = 1;
             //初始化建筑
             StaticMapLayerFilter = CreateFilter(StaticMapLayer, Hero | AI | BigAI | HeroBullet | AIBullet | ALLBullet, 0);
             //玩家
             HeroFilter = CreateFilter(Hero, BossFence | AIBullet | ALLBullet, 0);
             //小怪
-            AIFilter = CreateFilter(AI, AI | BigAI | ALLBullet | HeroBullet, 0);
+            AIFilter = CreateFilter(AI, AI | BigAI | ALLBullet | HeroBullet, groupIndex);
+            groupIndex++;
             //大怪
-            BigAIFilter = CreateFilter(BigAI, BigAI | ALLBullet | HeroBullet, 0);
+            BigAIFilter = CreateFilter(BigAI, BigAI | ALLBullet | HeroBullet, groupIndex);
+            groupIndex++;
+            //飞行怪
+            FlyAIFilter = CreateFilter(FlyAI, AI | BigAI | HeroBullet, groupIndex);
+            groupIndex++;
+            //飞行宠物
+            FlyPetFilter = CreateFilter(FlyPet, HeroBullet, -2);
             //玩家子弹
-            HeroBulletFilter = CreateFilter(HeroBullet, AI | BigAI | HeroBullet, 0);
-
+            HeroBulletFilter = CreateFilter(HeroBullet, AI | BigAI | FlyAI | FlyPet | StaticMapLayer, -1);
+            //AI子弹
+            AIBulletFilter = CreateFilter(AIBullet, FlyAI | StaticMapLayer | Hero, -1);
+            //全局子弹
+            ALLBulletFilter = CreateFilter(ALLBullet, AI | BigAI | StaticMapLayer | Hero, -1);
+            //掉落物
+            BattlePropFilter = CreateFilter(BattleProp, 0, -1);
+            //boss墙
+            BossFenceFilter = CreateFilter(BossFence, Hero, 0);
         }
 
         private static Filter CreateFilter(ushort categoryBits, ushort maskBits, short groupIndex)

@@ -70,7 +70,8 @@ namespace Box2DGame
             {
                 Shape = shape,//形状
                 Density = GameWorldConstants.Density,//密度
-                Friction = GameWorldConstants.Friction//摩擦系数
+                Friction = GameWorldConstants.Friction,//摩擦系数
+                Filter = GameWorldFilter.StaticMapLayerFilter//碰撞遮罩
             };
             body.LinearDamping = GameWorldConstants.LinearDamping;//线性阻尼
             body.AngularDamping = GameWorldConstants.AngularDamping;//角阻尼
