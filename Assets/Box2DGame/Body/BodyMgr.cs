@@ -12,39 +12,71 @@ namespace Box2DGame
         //Body唯一id
         private int GuidIndex = 0;
         //碰撞世界对象
-        private GameWorld m_GameWorld;
+        private World m_World;
         //所有者运行的Body集合
-        private Dictionary<int, Body> m_BodyList;
+        private Dictionary<int, Body> m_IdToBodyList;
+        private Dictionary<Body, int> m_BodyToIdList;
 
         //初始化BodyMgr
-        public void InitBodyMgr(GameWorld world)
+        public void InitBodyMgr(World world)
         {
-            m_GameWorld = world;
-            m_BodyList = new Dictionary<int, Body>();
+            m_World = world;
+            m_IdToBodyList = new Dictionary<int, Body>();
+            m_BodyToIdList = new Dictionary<Body, int>();
         }
 
         //删除BodyMgr
         public void DeleteBodyMgr()
         {
-            foreach (Body boby in m_BodyList.Values)
+            foreach (Body boby in m_IdToBodyList.Values)
             {
-                m_GameWorld.World.DestroyBody(boby);
+                m_World.DestroyBody(boby);
             }
-            m_BodyList.Clear();
+            m_IdToBodyList.Clear();
+            m_BodyToIdList.Clear();
             GuidIndex = 0;
-            m_GameWorld = null;
+            m_World = null;
+        }
+
+        //根据id获得Body
+        public Body GetBodyByGuid(int guid)
+        {
+            m_IdToBodyList.TryGetValue(guid, out Body body);
+            return body;
+        }
+
+        //根据Body获得id
+        public int GetGuidByBody(Body body)
+        {
+            int guid = 0;
+            m_BodyToIdList.TryGetValue(body, out guid);
+            return guid;
+        }
+
+        public void DeleteBodyByGuid(int guid)
+        {
+            if (m_IdToBodyList.TryGetValue(guid, out Body body))
+            {
+                m_IdToBodyList.Remove(guid);
+                m_BodyToIdList.Remove(body);
+                m_World.DestroyBody(body);
+            }
         }
 
 
         /// <summary>
-        /// 创建的是一个建筑阻挡
+        /// 创建一个建筑阻挡
         /// </summary>
-        /// <param name="pos"></param>
-        private void CreateBuildBody(System.Numerics.Vector2 pos, float width, float height, float angle)
+        /// <param name="pos">位置</param>
+        /// <param name="width">宽</param>
+        /// <param name="height">高</param>
+        /// <param name="angle">角度</param>
+        /// <returns></returns>
+        public int CreateBuildBody(System.Numerics.Vector2 pos, float width, float height, float angle)
         {
-            if (m_GameWorld?.IsInit() != true)
+            if (m_World == null)
             {
-                return;
+                return -1;
             }
 
             //Body对象
@@ -57,7 +89,7 @@ namespace Box2DGame
             bodyDef.Angle = angle;
 
             //物体工厂来创建
-            Body body = m_GameWorld.World.CreateBody(bodyDef);
+            Body body = m_World.CreateBody(bodyDef);
 
             //形状
             PolygonShape shape = new PolygonShape();
@@ -78,9 +110,259 @@ namespace Box2DGame
             //将boby和夹具相关联
             body.CreateFixture(fixtureDef);
 
+            int guid = GetGuid();
             //添加body到集合
-            m_BodyList.Add(GetGuid(), body);
+            m_IdToBodyList.Add(guid, body);
+            m_BodyToIdList.Add(body, guid);
+            return guid;
         }
+
+
+        /// <summary>
+        /// 创建一个角色
+        /// </summary>
+        /// <param name="pos">位置</param>
+        /// <param name="radius">半径</param>
+        /// <param name="angle">角度</param>
+        /// <returns></returns>
+        public int CreateHeroBody(System.Numerics.Vector2 pos, float radius, float angle)
+        {
+            if (m_World == null)
+            {
+                return -1;
+            }
+
+            //Body对象
+            BodyDef bodyDef = new BodyDef();
+            //静态的
+            bodyDef.BodyType = BodyType.DynamicBody;
+            //位置
+            bodyDef.Position = pos;
+            //角度
+            bodyDef.Angle = angle;
+
+            //物体工厂来创建
+            Body body = m_World.CreateBody(bodyDef);
+
+            //形状
+            CircleShape shape = new CircleShape();
+
+            //便捷方法创建一个圆
+            shape.Radius = radius;
+
+            //夹具
+            var fixtureDef = new FixtureDef
+            {
+                Shape = shape,//形状
+                Density = GameWorldConstants.Density,//密度
+                Friction = GameWorldConstants.Friction,//摩擦系数
+                Filter = GameWorldFilter.HeroFilter//碰撞遮罩
+            };
+            body.LinearDamping = GameWorldConstants.LinearDamping;//线性阻尼
+            body.AngularDamping = GameWorldConstants.AngularDamping;//角阻尼
+            //将boby和夹具相关联
+            body.CreateFixture(fixtureDef);
+
+            int guid = GetGuid();
+            //添加body到集合
+            m_IdToBodyList.Add(guid, body);
+            m_BodyToIdList.Add(body, guid);
+            return guid;
+        }
+
+        /// <summary>
+        /// 创建一个怪
+        /// </summary>
+        /// <param name="pos">位置</param>
+        /// <param name="aiType">0小怪 1飞行怪 2big怪 3飞行宠物</param>
+        /// <param name="radius"></param>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        public int CreateMonsterBody(System.Numerics.Vector2 pos, int aiType, float radius, float angle)
+        {
+            if (m_World == null)
+            {
+                return -1;
+            }
+
+            //Body对象
+            BodyDef bodyDef = new BodyDef();
+            //静态的
+            bodyDef.BodyType = BodyType.DynamicBody;
+            //位置
+            bodyDef.Position = pos;
+            //角度
+            bodyDef.Angle = angle;
+
+            //物体工厂来创建
+            Body body = m_World.CreateBody(bodyDef);
+
+            //形状
+            CircleShape shape = new CircleShape();
+
+            //便捷方法创建一个圆
+            shape.Radius = radius;
+
+            Filter friction;
+            if (aiType == 1)
+            {
+                friction = GameWorldFilter.FlyAIFilter;
+            }
+            else if (aiType == 2)
+            {
+                friction = GameWorldFilter.BigAIFilter;
+            }
+            else if (aiType == 3)
+            {
+                friction = GameWorldFilter.FlyPetFilter;
+            }
+            else
+            {
+                friction = GameWorldFilter.AIFilter;
+            }
+            //夹具
+            var fixtureDef = new FixtureDef
+            {
+                Shape = shape,//形状
+                Density = GameWorldConstants.Density,//密度
+                Friction = GameWorldConstants.Friction,//摩擦系数
+                Filter = friction//碰撞遮罩
+            };
+            body.LinearDamping = GameWorldConstants.LinearDamping;//线性阻尼
+            body.AngularDamping = GameWorldConstants.AngularDamping;//角阻尼
+            //将boby和夹具相关联
+            body.CreateFixture(fixtureDef);
+
+            int guid = GetGuid();
+            //添加body到集合
+            m_IdToBodyList.Add(guid, body);
+            m_BodyToIdList.Add(body, guid);
+            return guid;
+        }
+
+
+        /// <summary>
+        /// 创建一个圆形子弹
+        /// </summary>
+        /// <param name="pos">位置</param>
+        /// <param name="buttleSource">0玩家 1AI子弹 2全局</param>
+        /// <param name="radius"></param>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        public int CreateRoundBulletBody(System.Numerics.Vector2 pos, int buttleSource, float radius, float angle)
+        {
+            if (m_World == null)
+            {
+                return -1;
+            }
+
+            //Body对象
+            BodyDef bodyDef = new BodyDef();
+            //静态的
+            bodyDef.BodyType = BodyType.DynamicBody;
+            //位置
+            bodyDef.Position = pos;
+            //角度
+            bodyDef.Angle = angle;
+
+            //物体工厂来创建
+            Body body = m_World.CreateBody(bodyDef);
+            body.IsBullet = true;
+            //形状
+            CircleShape shape = new CircleShape();
+
+            //便捷方法创建一个圆
+            shape.Radius = radius;
+
+            Filter friction;
+            if (buttleSource == 0)
+            {
+                friction = GameWorldFilter.HeroBulletFilter;
+            }
+            else if (buttleSource == 1)
+            {
+                friction = GameWorldFilter.AIBulletFilter;
+            }
+            else
+            {
+                friction = GameWorldFilter.ALLBulletFilter;
+            }
+            //夹具
+            var fixtureDef = new FixtureDef
+            {
+                Shape = shape,//形状
+                Density = GameWorldConstants.Density,//密度
+                Friction = GameWorldConstants.Friction,//摩擦系数
+                Filter = friction//碰撞遮罩
+            };
+            body.LinearDamping = GameWorldConstants.LinearDamping;//线性阻尼
+            body.AngularDamping = GameWorldConstants.AngularDamping;//角阻尼
+            //将boby和夹具相关联
+            Fixture fixture = body.CreateFixture(fixtureDef);
+
+            // 将夹具设置为触发器
+            fixture.IsSensor = true;
+
+            int guid = GetGuid();
+            //添加body到集合
+            m_IdToBodyList.Add(guid, body);
+            m_BodyToIdList.Add(body, guid);
+            return guid;
+        }
+
+
+        /// <summary>
+        /// 创建一个掉落物
+        /// </summary>
+        /// <param name="pos">位置</param>
+        /// <param name="radius"></param>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        public int CreateBattlePropBody(System.Numerics.Vector2 pos, float radius, float angle)
+        {
+            if (m_World == null)
+            {
+                return -1;
+            }
+
+            //Body对象
+            BodyDef bodyDef = new BodyDef();
+            //静态的
+            bodyDef.BodyType = BodyType.DynamicBody;
+            //位置
+            bodyDef.Position = pos;
+            //角度
+            bodyDef.Angle = angle;
+
+            //物体工厂来创建
+            Body body = m_World.CreateBody(bodyDef);
+
+            //形状
+            CircleShape shape = new CircleShape();
+
+            //便捷方法创建一个圆
+            shape.Radius = radius;
+
+            //夹具
+            var fixtureDef = new FixtureDef
+            {
+                Shape = shape,//形状
+                Density = GameWorldConstants.Density,//密度
+                Friction = GameWorldConstants.Friction,//摩擦系数
+                Filter = GameWorldFilter.BattlePropFilter//碰撞遮罩
+            };
+            body.LinearDamping = GameWorldConstants.LinearDamping;//线性阻尼
+            body.AngularDamping = GameWorldConstants.AngularDamping;//角阻尼
+            //将boby和夹具相关联
+            body.CreateFixture(fixtureDef);
+
+            int guid = GetGuid();
+            //添加body到集合
+            m_IdToBodyList.Add(guid, body);
+            m_BodyToIdList.Add(body, guid);
+            return guid;
+        }
+
 
         //获得唯一id
         private int GetGuid()
